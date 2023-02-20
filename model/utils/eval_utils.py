@@ -27,7 +27,7 @@ def calIntsAcc(gt_i, pred_i, data_batch=1):
     ints_ratio = (gt_i - scale[0][0] * pred_i).abs() / (gt_i + 1e-8)
     ints_error = torch.stack(ints_ratio.split(3, 1), 1).mean(2)
     return {'ints_ratio': ints_ratio.mean().item()}, ints_error.squeeze()
-
+    
 def calNormalAcc(gt_n, pred_n, mask=None):
     """Tensor Dim: NxCxHxW"""
     dot_product = (gt_n * pred_n).sum(1).clamp(-1,1)
@@ -60,12 +60,13 @@ def SphericalDirsToClass(dirs, cls_num):
     return azimuth, elevate
 
 def SphericalClassToDirs(x_cls, y_cls, cls_num):
+    # print(x_cls.shape)
     theta = (x_cls.float() + 0.5) / cls_num * 180 - 90
     phi   = (y_cls.float() + 0.5) / cls_num * 180 - 90
     neg_x = theta < 0
     neg_y = phi < 0
-    theta = theta.clamp(-90, 90) / 180.0 * np.pi
-    phi   = phi.clamp(-90, 90) / 180.0 * np.pi
+    theta = theta.clamp(-90, 90) / 180.0 * torch.pi
+    phi   = phi.clamp(-90, 90) / 180.0 * torch.pi
 
     tan2_phi   = pow(torch.tan(phi), 2)
     tan2_theta = pow(torch.tan(theta), 2)
@@ -77,7 +78,7 @@ def SphericalClassToDirs(x_cls, y_cls, cls_num):
     dirs = torch.stack([x,y,z], 1)
     dirs = dirs / dirs.norm(p=2, dim=1, keepdim=True)
     return dirs
-    
+
 def LightIntsToClass(ints, cls_num):
     ints = (ints - 0.2) / 1.8
     ints = (ints * cls_num).clamp(0, cls_num-1).long()

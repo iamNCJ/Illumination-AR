@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch.nn.init import kaiming_normal_
 from . import model_utils
 from utils import eval_utils
+import pickle
 
 # Classification
 class FeatExtractor(nn.Module):
@@ -68,6 +69,9 @@ class LCNet(nn.Module):
         self.c_in      = c_in
         self.fuse_type = fuse_type
         self.other     = other
+        self.get_global_feature = False
+        self.global_feature_dir = "./data/models/gl_feature.pkl"
+        self.use_global_feature = False
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
@@ -85,7 +89,7 @@ class LCNet(nn.Module):
             imgs = x[0] 
         else:
             print('Rescaling images: from %dX%d to %dX%d' % (h, w, t_h, t_w))
-            imgs = torch.nn.functional.upsample(x[0], size=(t_h, t_w), mode='bilinear')
+            imgs = torch.nn.functional.interpolate(x[0], size=(t_h, t_w), mode='bilinear')
 
         inputs = list(torch.split(imgs, 3, 1))
         idx = 1
@@ -97,7 +101,7 @@ class LCNet(nn.Module):
         if self.other['in_mask']:
             mask = x[idx]
             if mask.shape[2] != inputs[0].shape[2] or mask.shape[3] != inputs[0].shape[3]:
-                mask = torch.nn.functional.upsample(mask, size=(t_h, t_w), mode='bilinear')
+                mask = torch.nn.functional.interpolate(mask, size=(t_h, t_w), mode='bilinear')
             for i in range(len(inputs)):
                 inputs[i] = torch.cat([inputs[i], mask], 1)
             idx += 1
@@ -111,9 +115,27 @@ class LCNet(nn.Module):
         return feat_fused
 
     def convertMidDirs(self, pred):
+        # print(pred['dirs_x'].shape)
         _, x_idx = pred['dirs_x'].data.max(1)
+        # print(x_idx.shape)
         _, y_idx = pred['dirs_y'].data.max(1)
         dirs = eval_utils.SphericalClassToDirs(x_idx, y_idx, self.other['dirs_cls'])
+        return dirs
+
+    def convertMidDirsCont(self, pred):
+        """Continuous Version"""
+        cls_num = self.other['dirs_cls']
+        device = pred['dirs_x'].device
+        # print(pred['dirs_x'].shape)
+        # print(torch.softmax(pred['dirs_x'], dim=-1).shape)
+        # print((torch.softmax(pred['dirs_x'], dim=0) * torch.linspace(0, cls_num - 1, cls_num, device=device)).shape)
+        x_idx = torch.sum(torch.softmax(pred['dirs_x'], dim=-1) * torch.linspace(0, cls_num - 1, cls_num, device=device), dim=-1)
+        y_idx = torch.sum(torch.softmax(pred['dirs_y'], dim=-1) * torch.linspace(0, cls_num - 1, cls_num, device=device), dim=-1)
+        # _, _x_idx = pred['dirs_x'].data.max(1)
+        # print(x_idx)
+        # print(_x_idx)
+        # print(x_idx.shape)
+        dirs = eval_utils.SphericalClassToDirs(x_idx, y_idx, cls_num)
         return dirs
 
     def convertMidIntens(self, pred, img_num):
@@ -130,8 +152,14 @@ class LCNet(nn.Module):
             out_feat = self.featExtractor(inputs[i])
             shape    = out_feat.data.shape
             feats.append(out_feat)
+        if(self.get_global_feature == True):
+            with open(self.global_feature_dir,'wb') as f:
+                pickle.dump(feats,f)
+        if(self.use_global_feature == True):
+            with open(self.global_feature_dir,'rb') as f:
+                feats.extend(pickle.load(f))
         feat_fused = self.fuseFeatures(feats, self.fuse_type)
-
+                
         l_dirs_x, l_dirs_y, l_ints = [], [], []
         for i in range(len(inputs)):
             net_input = torch.cat([feats[i], feat_fused], 1)
@@ -146,7 +174,11 @@ class LCNet(nn.Module):
         if self.other['s1_est_d']:
             pred['dirs_x'] = torch.cat(l_dirs_x, 0).squeeze()
             pred['dirs_y'] = torch.cat(l_dirs_y, 0).squeeze()
-            pred['dirs']   = self.convertMidDirs(pred)
+            if pred['dirs_x'].ndimension() == 1:
+                pred['dirs_x'] = pred['dirs_x'].view(1, -1)
+            if pred['dirs_y'].ndimension() == 1:
+                pred['dirs_y'] = pred['dirs_y'].view(1, -1)
+            pred['dirs']   = self.convertMidDirsCont(pred)
         if self.other['s1_est_i']:
             pred['ints'] = torch.cat(l_ints, 0).squeeze()
             if pred['ints'].ndimension() == 1:

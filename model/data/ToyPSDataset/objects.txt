@@ -1,2 +1,9 @@
+Pig
+Mouse
+ComposeScene
+SaltBox
+SpecularMetalic
+Transparent
 Bunny
+RealCaptured
 Sphere

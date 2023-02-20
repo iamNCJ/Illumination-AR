@@ -3,6 +3,7 @@ import torch
 from models import model_utils
 from utils import eval_utils, time_utils 
 import numpy as np
+import pickle
 
 def get_itervals(args, split):
     if split not in ['train', 'val', 'test']:
@@ -24,8 +25,22 @@ def test(args, split, loader, model, log, epoch, recorder):
         for i, sample in enumerate(loader):
             data = model_utils.parseData(args, sample, timer, split)
             input = model_utils.getInput(args, data)
-
+            if(model.get_global_feature==True or model.use_global_feature==True):
+                model.global_feature_dir="./data/models/gl_feature_"+str(i)+".pkl"
             pred = model(input); timer.updateTime('Forward')
+            with open('./data/models/stage1_result/'+str(i)+'.txt','w') as f:
+                print("dirs:",file=f)
+                print(pred['dirs'],file=f)
+                print("intens",file=f)
+                print(pred['intens'], file=f)
+                print("dirs_x",file=f)
+                for j in range(pred["dirs_x"].shape[0]):
+                    print(pred["dirs_x"][j],",",file=f)
+                print("dirs_y",file=f)
+                for j in range(pred["dirs_y"].shape[0]):
+                    print(pred["dirs_y"][j],",",file=f)
+            with open('./data/models/stage1_result/'+str(i)+'.pkl', 'wb') as f:
+                pickle.dump(pred, f)
 
             recoder, iter_res, error = prepareRes(args, data, pred, recorder, log, split)
 

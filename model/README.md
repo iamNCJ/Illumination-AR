@@ -15,9 +15,33 @@ This paper addresses the problem of learning based _uncalibrated_ photometric st
 - July 28, 2019: We have already updated the code to support Python 3.7 + PyTorch 1.10. To run the previous version (Python 2.7 + PyTorch 0.40), please checkout to `python2.7` branch first (by `git checkout python2.7`).
 
 ## Dependencies
+SDPS-Net is implemented in [PyTorch](https://pytorch.org/) and tested with Ubuntu (14.04 and 16.04), please install PyTorch first following the official instruction. 
 
-TBD
+- Python 3.7 
+- PyTorch (version = 1.10)
+- torchvision
+- CUDA-9.0 # Skip this if you only have CPUs in your computer
+- numpy
+- scipy
+- scikit-image 
 
+You are highly recommended to use Anaconda and create a new environment to run this code.
+```shell
+# Create a new python3.7 environment named py3.7
+conda create -n py3.7 python=3.7
+
+# Activate the created environment
+source activate py3.7
+
+# Example commands for installing the dependencies 
+conda install pytorch torchvision cudatoolkit=9.0 -c pytorch
+conda install -c anaconda scipy 
+conda install -c anaconda scikit-image 
+
+# Download this code
+git clone https://github.com/guanyingc/SDPS-Net.git
+cd SDPS-Net
+```
 ## Overview
 We provide:
 - Trained models
