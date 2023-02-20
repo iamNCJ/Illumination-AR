@@ -18,7 +18,7 @@ def main(args):
     test_loader = custom_data_loader.benchmarkLoader(args)
     model= custom_model.buildModel(args)
     recorder = recorders.Records(args.log_dir)
-    # model.use_global_feature=True
+    model.use_global_feature=True
     test_utils.test(args, 'test', test_loader, model, log, 1, recorder)
     log.plotCurves(recorder, 'test')
 

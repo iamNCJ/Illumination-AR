@@ -25,7 +25,7 @@ def test(args, split, loader, model, log, epoch, recorder):
         for i, sample in enumerate(loader):
             data = model_utils.parseData(args, sample, timer, split)
             input = model_utils.getInput(args, data)
-            if(model.get_global_feature==True or model.use_global_feature==True):
+            if model.get_global_feature or model.use_global_feature:
                 model.global_feature_dir="./data/models/gl_feature_"+str(i)+".pkl"
             pred = model(input); timer.updateTime('Forward')
             with open('./data/models/stage1_result/'+str(i)+'.txt','w') as f:

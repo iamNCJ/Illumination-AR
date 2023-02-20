@@ -25,6 +25,8 @@ def test(args, split, loader, models, log, epoch, recorder):
         for i, sample in enumerate(loader):
             data = model_utils.parseData(args, sample, timer, split)
             input = model_utils.getInput(args, data)
+            if models[0].get_global_feature or models[0].use_global_feature:
+                models[0].global_feature_dir="./data/models/gl_feature_"+str(i)+".pkl"
 
             pred_c = models[0](input); timer.updateTime('Forward')
             input.append(pred_c)
