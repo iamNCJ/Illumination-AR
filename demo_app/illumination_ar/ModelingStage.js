@@ -1,4 +1,4 @@
-import { MobileModel, torch, torchvision, media } from 'react-native-pytorch-core';
+import { torch, torchvision, media, MobileModel } from 'react-native-pytorch-core';
 
 const T = torchvision.transforms;
 
@@ -14,6 +14,7 @@ export default async function ModelingStage(image, reset = False) {
     // Get image width and height
     const width = image.getWidth();
     const height = image.getHeight();
+    console.log(`width: ${width}, height: ${height}`);
 
     // Convert image to blob, which is a byte representation of the image
     // in the format height (H), width (W), and channels (C), or HWC for short
@@ -29,7 +30,8 @@ export default async function ModelingStage(image, reset = False) {
     tensor = tensor.div(255);
 
     // Crop the image in the center to be a squared image
-    const centerCrop = T.centerCrop(Math.min(width, height));
+    // const centerCrop = T.centerCrop(Math.min(width, height));
+    const centerCrop = T.centerCrop(320);
     tensor = centerCrop(tensor);
 
     // Resize the image tensor to 3 x 128 x 128

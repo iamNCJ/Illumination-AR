@@ -6,7 +6,7 @@ module.exports = {
   // ...
 
   resolver: {
-    assetExts: [...defaultAssetExts, 'ptl'],
+    assetExts: [...defaultAssetExts, 'ptl', 'bin', 'gltf'],
   },
 
   // ...
