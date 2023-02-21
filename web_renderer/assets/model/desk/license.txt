@@ -1,0 +1,11 @@
+Model Information:
+* title:	Desk Asset
+* source:	https://sketchfab.com/3d-models/desk-asset-ca972bf129344a73a3fe59a0eef78164
+* author:	Ankledot (https://sketchfab.com/Ankledot)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Desk Asset" (https://sketchfab.com/3d-models/desk-asset-ca972bf129344a73a3fe59a0eef78164) by Ankledot (https://sketchfab.com/Ankledot) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
