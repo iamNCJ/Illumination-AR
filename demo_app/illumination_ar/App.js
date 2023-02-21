@@ -1,9 +1,9 @@
 import * as React from 'react';
-// import { StyleSheet, Text, View, Button } from 'react-native';
+import { Button } from 'react-native';
 import { Camera } from 'react-native-pytorch-core';
 import ModelingStage from './ModelingStage';
 // import { GLView } from 'expo-gl';
-import { Renderer, THREE, TextureLoader, loadAsync } from 'expo-three';
+// import { Renderer, THREE, TextureLoader, loadAsync } from 'expo-three';
 // import { Asset } from 'expo-asset';
 // import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 // import * as FileSystem from "expo-file-system";
@@ -311,9 +311,10 @@ function Box(props) {
 
   // Rotate mesh every frame, this is outside of React without overhead
   useFrame(() => {
-    // if (mesh && mesh.current) {
-    //   mesh.current.rotation.x = mesh.current.rotation.y += 0.01;
-    // }
+    if (mesh && mesh.current) {
+      // mesh.current.rotation.x = mesh.current.rotation.y += 0.01;
+      mesh.current.rotation.x = mesh.current.rotation.y = 0.5;
+    }
   });
 
   return (
@@ -325,7 +326,7 @@ function Box(props) {
       onPointerOver={(e) => setHover(true)}
       onPointerOut={(e) => setHover(false)}
     >
-      <sphereBufferGeometry attach="geometry" args={[1, 1, 1]} />
+      <boxGeometry attach="geometry" args={[1, 1, 1]} />
       <meshStandardMaterial
         attach="material"
         color={hovered ? "hotpink" : "orange"}
@@ -336,25 +337,13 @@ function Box(props) {
 
 export default function App() {
   const [isRunning, setRunning] = React.useState(true);
+  const [resetText, setResetText] = React.useState("reset");
+  const [reset, setReset] = React.useState(false);
   const [lastImage, setLastImage] = React.useState(null);
   const [lightDirection, setLightDirection] = React.useState([1., 0., 0.]);
   const [lightIntensity, setLightIntensity] = React.useState(1.);
 
-  function Environment() {
-    const { scene } = useThree()
-    const texture = useLoader(THREE.TextureLoader, 'https://storage.googleapis.com/sekokan-dev/4efe1f00-fbfa-4784-8602-c400c68c1d9f')
-    texture.mapping = THREE.EquirectangularReflectionMapping
-    texture.encoding = THREE.sRGBEncoding
-    scene.background = texture
-    // useFrame((state) => {
-    //   state.camera.fov = fov
-    //   state.camera.updateProjectionMatrix()
-    // })
-
-    // return null
-  }
-
-  async function handleImage(image, reset = false) {
+  async function handleImage(image) {
     // console.log("handleImage")
     setLastImage(image)
     if (isRunning) {
@@ -397,6 +386,11 @@ export default function App() {
         </Suspense> */}
         {/* <Box position={[1.2, 0, 0]} /> */}
       </Canvas>
+      <Button title={resetText} onPress={() => {
+        setReset(true);
+        setResetText("restart");
+        console.log("reset");
+      }}/>
     </View>
   );
 }
@@ -421,94 +415,3 @@ const styles = StyleSheet.create({
     height: "100%",
   }
 });
-
-
-// import { GLView } from 'expo-gl';
-// import { Renderer, TextureLoader } from 'expo-three';
-// import * as React from 'react';
-// import {
-//   AmbientLight,
-//   BoxBufferGeometry,
-//   Fog,
-//   GridHelper,
-//   Mesh,
-//   MeshStandardMaterial,
-//   PerspectiveCamera,
-//   PointLight,
-//   Scene,
-//   SpotLight,
-// } from 'three';
-
-// export default function App() {
-//   let timeout;
-
-//   React.useEffect(() => {
-//     // Clear the animation loop when the component unmounts
-//     return () => clearTimeout(timeout);
-//   }, []);
-
-//   return (
-//     <GLView
-//       style={{ flex: 1 }}
-//       onContextCreate={async (gl) => {
-//         const { drawingBufferWidth: width, drawingBufferHeight: height } = gl;
-//         const sceneColor = 0x6ad6f0;
-
-//         // Create a WebGLRenderer without a DOM element
-//         const renderer = new Renderer({ gl });
-//         renderer.setSize(width, height);
-//         renderer.setClearColor(sceneColor);
-
-//         const camera = new PerspectiveCamera(70, width / height, 0.01, 1000);
-//         camera.position.set(2, 5, 5);
-
-//         const scene = new Scene();
-//         scene.fog = new Fog(sceneColor, 1, 10000);
-//         scene.add(new GridHelper(10, 10));
-
-//         const ambientLight = new AmbientLight(0x101010);
-//         scene.add(ambientLight);
-
-//         const pointLight = new PointLight(0xffffff, 2, 1000, 1);
-//         pointLight.position.set(0, 200, 200);
-//         scene.add(pointLight);
-
-//         const spotLight = new SpotLight(0xffffff, 0.5);
-//         spotLight.position.set(0, 500, 100);
-//         spotLight.lookAt(scene.position);
-//         scene.add(spotLight);
-
-//         const cube = new IconMesh();
-//         scene.add(cube);
-
-//         camera.lookAt(cube.position);
-
-//         function update() {
-//           cube.rotation.y += 0.05;
-//           cube.rotation.x += 0.025;
-//         }
-
-//         // Setup an animation loop
-//         const render = () => {
-//           timeout = requestAnimationFrame(render);
-//           update();
-//           renderer.render(scene, camera);
-//           gl.endFrameEXP();
-//         };
-//         render();
-//       }}
-//     />
-//   );
-// }
-
-// class IconMesh extends Mesh {
-//   constructor() {
-//     super(
-//       new BoxBufferGeometry(1.0, 1.0, 1.0),
-//       new MeshStandardMaterial({
-//         map: new TextureLoader().load(require('./assets/icon.png')),
-//         // color: 0xff0000
-//       })
-//     );
-//   }
-// }
